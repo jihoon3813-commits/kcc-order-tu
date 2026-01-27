@@ -3,7 +3,11 @@
  * 기존 Code.gs의 로직을 유지하면서, 외부에서의 fetch() 요청을 처리하도록 doPost/doGet을 수정했습니다.
  */
 
-const SPREADSHEET_ID = '1Enb9FTaDWhwbPPrtt-IPiEo_rtn1AUSMmLFkjcl_ib4';
+function doGet() {
+  return createResponse_({ ok: true, msg: 'KCC API is running.' });
+}
+
+const SPREADSHEET_ID = '1N_Y6op2Nail3oHfsdZIdPza2ZmDd8oV1qS44LqxEXSU';
 const SHEET_CONTRACT = '계약현황';
 const SHEET_CONFIG   = 'config';
 

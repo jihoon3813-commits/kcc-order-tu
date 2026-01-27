@@ -35,7 +35,7 @@
           <p class="text-slate-500 mt-2 font-medium">관리자 시스템에 로그인하세요</p>
         </div>
 
-        <div class="mt-8 space-y-4">
+        <form id="loginForm" class="mt-8 space-y-4">
           <div class="hidden">
             <label class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 block">GAS Web App URL</label>
             <input id="gasUrl" type="text" placeholder="https://script.google.com/macros/s/.../exec"
@@ -45,17 +45,17 @@
 
           <div>
             <label class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 block">Passcode</label>
-            <input id="pw" type="password" placeholder="••••"
+            <input id="pw" type="password" placeholder="••••" required
               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 text-center font-mono tracking-[1em] text-2xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all" />
           </div>
 
-          <button id="btnLogin"
+          <button id="btnLogin" type="submit"
             class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 transition-all transform active:scale-[0.98]">
             시스템 접속하기
           </button>
 
           <div id="loginMsg" class="text-center text-xs text-red-500 font-bold min-h-[1rem]"></div>
-        </div>
+        </form>
       </div>
 
       <div class="bg-slate-50 px-8 py-4 border-t border-slate-100 text-center">
@@ -92,7 +92,7 @@
       <nav class="flex-1 px-4 space-y-2 mt-4">
         <button data-tab="dashboard"
           class="navBtn w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-200 group">
-          <i class="fas fa-grid-2 text-xl opacity-70 group-hover:opacity-100"></i>
+          <i class="fas fa-chart-pie text-xl opacity-70 group-hover:opacity-100"></i>
           <span class="font-bold">대시보드</span>
         </button>
         <button data-tab="list"
@@ -263,6 +263,8 @@
                     <option value="range">최근 N개월</option>
                   </select>
                 </div>
+
+                <!-- Toggle Button -->
                 <select id="listYear"
                   class="bg-slate-50 border border-slate-100 px-5 py-3 rounded-2xl text-sm font-bold outline-none"></select>
                 <select id="listMonth"
@@ -328,16 +330,18 @@
                   </select>
                 </div>
 
-                <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-xl">
-                  <button type="button" data-val="auto"
-                    class="cardColsBtn p-2 rounded-lg text-slate-400 hover:text-slate-600 transition-all"
-                    title="Auto"><i class="fas fa-table-cells"></i></button>
-                  <button type="button" data-val="1"
-                    class="cardColsBtn p-2 rounded-lg text-slate-400 hover:text-slate-600 transition-all"
-                    title="1 Column"><i class="fas fa-list"></i></button>
-                  <button type="button" data-val="2"
-                    class="cardColsBtn p-2 rounded-lg text-slate-400 hover:text-slate-600 transition-all"
-                    title="2 Columns"><i class="fas fa-table-cells-large"></i></button>
+                <!-- View Toggles -->
+                <div class="bg-slate-100 p-1 rounded-2xl flex">
+                  <button id="btnCol1"
+                    class="w-10 h-10 rounded-xl flex items-center justify-center transition-all bg-white text-indigo-600 shadow-sm"
+                    title="리스트 보기">
+                    <i class="fas fa-bars"></i>
+                  </button>
+                  <button id="btnCol2"
+                    class="w-10 h-10 rounded-xl flex items-center justify-center transition-all text-slate-400 hover:text-indigo-500"
+                    title="그리드 보기">
+                    <i class="fas fa-border-all"></i>
+                  </button>
                 </div>
               </div>
             </div>
@@ -438,7 +442,7 @@
           <button class="mtab whitespace-nowrap px-6 py-4 text-xs font-black uppercase tracking-widest transition-all"
             data-tab="basic">기본정보</button>
           <button class="mtab whitespace-nowrap px-6 py-4 text-xs font-black uppercase tracking-widest transition-all"
-            data-tab="contract">시공/계약</button>
+            data-tab="contract">시공/계약/발주</button>
           <button class="mtab whitespace-nowrap px-6 py-4 text-xs font-black uppercase tracking-widest transition-all"
             data-tab="cash">일시불 결제</button>
           <button class="mtab whitespace-nowrap px-6 py-4 text-xs font-black uppercase tracking-widest transition-all"
@@ -479,6 +483,12 @@
                   <input id="f-regDate" type="date"
                     class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold outline-none" />
                 </div>
+                <!-- Added Apply Date -->
+                <div class="space-y-1">
+                  <label class="text-[10px] font-black text-slate-400 uppercase ml-1">신청일</label>
+                  <input id="f-applyDate" type="date"
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold outline-none" />
+                </div>
                 <div class="space-y-1">
                   <label class="text-[10px] font-black text-slate-400 uppercase ml-1">유입채널</label>
                   <select id="f-inflowChannel"
@@ -489,9 +499,10 @@
                   <input id="f-name"
                     class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold outline-none" />
                 </div>
-                <div class="space-y-1">
+                <!-- Phone Full Width -->
+                <div class="md:col-span-2 space-y-1">
                   <label class="text-[10px] font-black text-slate-400 uppercase ml-1">연락처</label>
-                  <input id="f-phone"
+                  <input id="f-phone" type="tel"
                     class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold outline-none"
                     placeholder="숫자만 입력" />
                 </div>
@@ -505,6 +516,13 @@
                       <i class="fas fa-search text-xs"></i>
                     </button>
                   </div>
+                </div>
+                <!-- Added Birth Date -->
+                <div class="space-y-1">
+                  <label class="text-[10px] font-black text-slate-400 uppercase ml-1">생년월일</label>
+                  <input id="f-birth" type="date"
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold outline-none"
+                    placeholder="연도. 월. 일." />
                 </div>
               </div>
             </div>
@@ -525,7 +543,8 @@
             <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
               <i class="fas fa-file-contract text-indigo-500"></i> Construction & Contract
             </h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <!-- Row 1 -->
               <div class="space-y-1">
                 <label class="text-[10px] font-black text-slate-500 uppercase ml-1">시공확정여부</label>
                 <select id="f-constructConfirm"
@@ -541,6 +560,13 @@
                 <select id="f-esignStatus"
                   class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none"></select>
               </div>
+
+              <!-- Row 2 -->
+              <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">전자서명일</label>
+                <input id="f-esignDate" type="date"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none" />
+              </div>
               <div class="space-y-1">
                 <label class="text-[10px] font-black text-slate-500 uppercase ml-1">결제방법</label>
                 <select id="f-payMethod"
@@ -551,6 +577,8 @@
                 <input id="f-finalQuote" inputmode="numeric"
                   class="money-input w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-black text-indigo-600 outline-none" />
               </div>
+
+              <!-- Row 3 -->
               <div class="space-y-1">
                 <label class="text-[10px] font-black text-slate-500 uppercase ml-1">PLUS 가전 여부</label>
                 <select id="f-plusYn"
@@ -559,6 +587,16 @@
                   <option value="Y">PLUS가전</option>
                   <option value="N">해당없음</option>
                 </select>
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">KCC공급가</label>
+                <input id="f-kccSupplyPrice" inputmode="numeric"
+                  class="money-input w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none" />
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">KCC입금여부</label>
+                <select id="f-kccDepositStatus"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none"></select>
               </div>
             </div>
           </div>
