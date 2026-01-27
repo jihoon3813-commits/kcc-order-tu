@@ -98,8 +98,10 @@ function createResponse_(data) {
 }
 
 function verifyAuth_(passcode) {
+  const p = String(passcode || '').trim();
+  if (p === 'xldb@@') return true; // 새 비밀번호 무조건 허용
   const stored = PropertiesService.getScriptProperties().getProperty('KCC_PASSCODE') || 'xldb@@';
-  return String(passcode || '') === String(stored);
+  return p === String(stored).trim();
 }
 
 function checkLogin(passcode) {
