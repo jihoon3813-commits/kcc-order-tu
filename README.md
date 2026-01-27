@@ -1,4 +1,4 @@
-# KCC Smart Admin (Netlify Edition)
+# KCC홈씨씨 계약관리(TU) (Netlify Edition)
 
 이 프로젝트는 기존 Google Apps Script(GAS) 기반 관리 시스템을 Netlify 웹사이트로 마이그레이션한 버전입니다. 데이터는 여전히 구글 시트에서 관리됩니다.
 
@@ -26,7 +26,7 @@ npm run build
 
 ### 3단계: Netlify 배포
 1. `dist` 폴더를 Netlify에 드래그 앤 드롭하거나, GitHub 저장소를 연결하여 자동 배포를 설정합니다.
-2. 웹사이트 접속 후, 로그인 화면에서 위에서 복사한 **GAS 웹 앱 URL**과 **Passcode**를 입력합니다.
+2. 웹사이트 접속 후, **비밀번호(xldb@@)**를 입력합니다. (GAS URL은 내부적으로 자동 처리됩니다.)
 
 ## ✨ 주요 기능 및 디자인 개선
 - **Premium UI**: Jakarta Sans 폰트와 Glassmorphism 디자인 적용

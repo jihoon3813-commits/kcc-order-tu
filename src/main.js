@@ -170,7 +170,7 @@ function filterByPeriod(list, mode, year, month, rangeMonths) {
  * Authentication
  */
 async function login() {
-    const gasUrl = $('gasUrl').value.trim();
+    const gasUrl = ($('gasUrl').value.trim()) || DEFAULT_GAS_URL;
     const pw = $('pw').value;
 
     if (!gasUrl) return alert('GAS Web App URL을 입력해주세요.');

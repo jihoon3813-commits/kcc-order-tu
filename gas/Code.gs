@@ -98,7 +98,7 @@ function createResponse_(data) {
 }
 
 function verifyAuth_(passcode) {
-  const stored = PropertiesService.getScriptProperties().getProperty('KCC_PASSCODE') || '0000';
+  const stored = PropertiesService.getScriptProperties().getProperty('KCC_PASSCODE') || 'xldb@@';
   return String(passcode || '') === String(stored);
 }
 
