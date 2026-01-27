@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, shrink-to-fit=no, user-scalable=no">
+  <title>KCC Dashboard | Premium Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+
+<body class="h-screen overflow-hidden bg-slate-50">
+  <!-- LOGIN SCREEN -->
+  <div id="login" class="fixed inset-0 bg-slate-900 flex items-center justify-center p-4 z-[500]">
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden relative animate-fade-in">
+      <div id="loginBusy" class="hidden absolute inset-0 bg-white/70 backdrop-blur-sm flex flex-col items-center justify-center z-10">
+        <div class="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        <div class="mt-4 text-indigo-700 font-bold">인증 중...</div>
+      </div>
+      
+      <div class="p-8">
+        <div class="flex justify-center mb-6">
+          <div class="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200">
+            <i class="fas fa-shield-alt text-white text-3xl"></i>
+          </div>
+        </div>
+        
+        <div class="text-center">
+          <h1 class="text-3xl font-extrabold text-slate-900">KCC Smart Admin</h1>
+          <p class="text-slate-500 mt-2 font-medium">관리자 시스템에 로그인하세요</p>
+        </div>
+
+        <div class="mt-8 space-y-4">
+          <div>
+            <label class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 block">GAS Web App URL</label>
+            <input id="gasUrl" type="text" placeholder="https://script.google.com/macros/s/.../exec"
+              class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all" />
+            <p class="text-[10px] text-slate-400 mt-1 font-medium">* 구글 앱스 스크립트 배포 URL</p>
+          </div>
+          
+          <div>
+            <label class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 block">Passcode</label>
+            <input id="pw" type="password" placeholder="••••"
+              class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 text-center font-mono tracking-[1em] text-2xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all" />
+          </div>
+
+          <button id="btnLogin" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 transition-all transform active:scale-[0.98]">
+            시스템 접속하기
+          </button>
+          
+          <div id="loginMsg" class="text-center text-xs text-red-500 font-bold min-h-[1rem]"></div>
+        </div>
+      </div>
+      
+      <div class="bg-slate-50 px-8 py-4 border-t border-slate-100 text-center">
+        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Powered by SONO KCC Security</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADING OVERLAY -->
+  <div id="busy" class="hidden fixed inset-0 z-[600] bg-slate-900/40 backdrop-blur-sm items-center justify-center transition-all">
+    <div class="bg-white rounded-2xl shadow-2xl px-8 py-6 flex flex-col items-center gap-4 animate-fade-in">
+      <div class="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+      <div class="font-bold text-slate-700" id="busyText">데이터 동기화 중...</div>
+    </div>
+  </div>
+
+  <div id="app" class="hidden h-full flex overflow-hidden">
+    <!-- SIDEBAR -->
+    <aside class="w-72 bg-slate-900 text-slate-300 hidden md:flex flex-col relative z-20">
+      <div class="px-8 py-8">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-900/50">
+            <i class="fas fa-layer-group text-white text-xl"></i>
+          </div>
+          <div>
+            <div class="font-extrabold text-white text-lg tracking-tight">SONO KCC</div>
+            <div class="text-[10px] text-indigo-400 font-black uppercase tracking-widest">Admin Control</div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="flex-1 px-4 space-y-2 mt-4">
+        <button data-tab="dashboard" class="navBtn w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-200 group">
+          <i class="fas fa-grid-2 text-xl opacity-70 group-hover:opacity-100"></i>
+          <span class="font-bold">대시보드</span>
+        </button>
+        <button data-tab="list" class="navBtn w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-200 group">
+          <i class="fas fa-users text-xl opacity-70 group-hover:opacity-100"></i>
+          <span class="font-bold">고객리스트</span>
+        </button>
+        <button data-tab="calendar" class="navBtn w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-200 group">
+          <i class="fas fa-calendar-days text-xl opacity-70 group-hover:opacity-100"></i>
+          <span class="font-bold">시공달력</span>
+        </button>
+      </nav>
+
+      <div class="p-6">
+        <div class="bg-white/5 rounded-2xl p-4 border border-white/5">
+          <div class="text-[10px] font-black text-slate-500 mb-3 uppercase tracking-widest">Active Banners</div>
+          <div id="banners" class="space-y-3"></div>
+        </div>
+        
+        <button id="btnLogout" class="w-full mt-6 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 hover:bg-rose-500/10 hover:text-rose-400 text-xs font-bold transition-all border border-white/5">
+          <i class="fas fa-sign-out-alt"></i>
+          로그아웃
+        </button>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <div class="flex-1 flex flex-col min-w-0 bg-slate-50 relative">
+      <header class="h-20 flex items-center justify-between px-8 bg-white/50 backdrop-blur-md sticky top-0 z-10">
+        <div class="flex items-center gap-4">
+          <button id="btnMobileMenu" class="md:hidden w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-600">
+            <i class="fas fa-bars-staggered text-lg"></i>
+          </button>
+          <div>
+            <h2 class="text-xl font-extrabold text-slate-900" id="topTitle">대시보드</h2>
+            <p class="text-[11px] text-slate-400 font-bold" id="topSub">최근 6개월 데이터 기준</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <button id="btnRefresh" class="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:border-indigo-100 transition-all shadow-sm">
+            <i class="fas fa-arrows-rotate"></i>
+          </button>
+          <div class="h-10 w-[1px] bg-slate-200 mx-2"></div>
+          <div class="flex items-center gap-3 bg-white p-1.5 pr-4 rounded-2xl border border-slate-100 shadow-sm">
+            <div class="w-9 h-9 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400">
+              <i class="fas fa-user-tie"></i>
+            </div>
+            <span class="text-sm font-bold text-slate-700">Administrator</span>
+          </div>
+        </div>
+      </header>
+
+      <main class="flex-1 overflow-y-auto custom-scrollbar p-8">
+        <!-- DASHBOARD CONTAINER -->
+        <div id="page-dashboard" class="space-y-8 animate-fade-in">
+          <!-- QUICK FILTERS -->
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+            <div class="flex items-center gap-3 flex-wrap">
+              <div class="flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-xl">
+                <i class="far fa-calendar text-slate-400"></i>
+                <select id="dashMode" class="bg-transparent text-sm font-bold outline-none cursor-pointer">
+                  <option value="month">월별조회</option>
+                  <option value="year">연간누적</option>
+                  <option value="all">총누적</option>
+                  <option value="range">최근 N개월</option>
+                </select>
+              </div>
+              <select id="dashYear" class="bg-slate-50 border border-slate-100 px-4 py-2 rounded-xl text-sm font-bold outline-none"></select>
+              <select id="dashMonth" class="bg-slate-50 border border-slate-100 px-4 py-2 rounded-xl text-sm font-bold outline-none"></select>
+            </div>
+            
+            <div class="flex gap-2 p-1 bg-slate-100 rounded-2xl">
+              <button class="dashQuick px-6 py-2 rounded-xl text-xs font-extrabold transition-all" data-m="0">당월</button>
+              <button class="dashQuick px-6 py-2 rounded-xl text-xs font-extrabold transition-all" data-m="3">3개월</button>
+              <button class="dashQuick px-6 py-2 rounded-xl text-xs font-extrabold transition-all" data-m="6">6개월</button>
+              <button class="dashQuick px-6 py-2 rounded-xl text-xs font-extrabold transition-all" data-m="12">1년</button>
+            </div>
+          </div>
+
+          <!-- SUMMARY CARDS -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="space-y-4">
+              <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest pl-2">Real-time Performance</h3>
+              <div id="dashPerf" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+            </div>
+            <div class="space-y-4">
+              <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest pl-2">Revenue Overview</h3>
+              <div id="dashSales" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+            </div>
+          </div>
+
+          <!-- BOTTOM GRID -->
+          <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+            <!-- TASKS -->
+            <div class="xl:col-span-5 space-y-4">
+              <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest pl-2">Smart Tasks</h3>
+              <div class="bg-slate-900 rounded-[32px] p-8 shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-20 -top-20 w-64 h-64 bg-indigo-600/20 rounded-full blur-3xl"></div>
+                <div class="relative z-10 h-full flex flex-col">
+                  <div class="flex items-center justify-between mb-6">
+                    <div>
+                      <h4 class="text-white text-lg font-bold">업무 누락 방지</h4>
+                      <p class="text-indigo-400 text-xs font-bold">진행이 멈춘 고객을 확인해 주세요</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white">
+                      <i class="fas fa-bell"></i>
+                    </div>
+                  </div>
+                  <div id="dashTasks" class="space-y-3 flex-1"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- CONSTRUCTION SCHEDULE -->
+            <div class="xl:col-span-7 space-y-4">
+              <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest pl-2">3-Month Timeline</h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
+                <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden flex flex-col shadow-sm">
+                  <div class="bg-slate-50 border-b border-slate-100 px-5 py-4 flex items-center justify-between">
+                    <span class="text-xs font-black text-slate-400 uppercase tracking-wider" id="mPrevT">PREV</span>
+                    <i class="fas fa-circle text-[6px] text-slate-300"></i>
+                  </div>
+                  <div class="p-4 space-y-3 flex-1" id="mPrev"></div>
+                </div>
+                <div class="bg-white border border-indigo-100 rounded-3xl overflow-hidden flex flex-col shadow-md ring-2 ring-indigo-600/5">
+                  <div class="bg-indigo-50 border-b border-indigo-100 px-5 py-4 flex items-center justify-between">
+                    <span class="text-xs font-black text-indigo-600 uppercase tracking-wider" id="mCurT">PRESENT</span>
+                    <i class="fas fa-circle text-[6px] text-indigo-400 animate-pulse"></i>
+                  </div>
+                  <div class="p-4 space-y-3 flex-1" id="mCur"></div>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden flex flex-col shadow-sm">
+                  <div class="bg-slate-50 border-b border-slate-100 px-5 py-4 flex items-center justify-between">
+                    <span class="text-xs font-black text-slate-400 uppercase tracking-wider" id="mNextT">NEXT</span>
+                    <i class="fas fa-circle text-[6px] text-slate-300"></i>
+                  </div>
+                  <div class="p-4 space-y-3 flex-1" id="mNext"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LIST CONTAINER -->
+        <div id="page-list" class="hidden space-y-6 animate-fade-in">
+          <div class="bg-white p-8 rounded-[32px] border border-slate-200 shadow-sm space-y-6">
+            <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+              <div class="flex items-center gap-3 flex-wrap">
+                <div class="flex items-center gap-2 bg-slate-100 px-5 py-3 rounded-2xl">
+                  <i class="far fa-calendar text-slate-400"></i>
+                  <select id="listMode" class="bg-transparent text-sm font-bold outline-none">
+                    <option value="month">월별조회</option>
+                    <option value="year">연간누적</option>
+                    <option value="all">총누적</option>
+                    <option value="range">최근 N개월</option>
+                  </select>
+                </div>
+                <select id="listYear" class="bg-slate-50 border border-slate-100 px-5 py-3 rounded-2xl text-sm font-bold outline-none"></select>
+                <select id="listMonth" class="bg-slate-50 border border-slate-100 px-5 py-3 rounded-2xl text-sm font-bold outline-none"></select>
+                
+                <div class="relative min-w-[320px]">
+                  <i class="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                  <input id="q" class="w-full bg-slate-50 border border-slate-100 pl-12 pr-5 py-3 rounded-2xl text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500 transition-all" placeholder="이름 / 연락처 / 고객번호 / 주소">
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-3">
+                <button id="btnAdd" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3.5 rounded-2xl text-sm font-black shadow-lg shadow-indigo-200 flex items-center gap-2 transition-all active:scale-[0.98]">
+                  <i class="fas fa-plus"></i> 신규 고객 등록
+                </button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              <select id="fBranch" class="premium-input bg-slate-50 border border-slate-100 px-4 py-2.5 rounded-xl text-xs font-bold outline-none"></select>
+              <select id="fChannel" class="premium-input bg-slate-50 border border-slate-100 px-4 py-2.5 rounded-xl text-xs font-bold outline-none"></select>
+              <select id="fPay" class="premium-input bg-slate-50 border border-slate-100 px-4 py-2.5 rounded-xl text-xs font-bold outline-none"></select>
+              <select id="fEsign" class="premium-input bg-slate-50 border border-slate-100 px-4 py-2.5 rounded-xl text-xs font-bold outline-none"></select>
+              <select id="fSubApprove" class="premium-input bg-slate-50 border border-slate-100 px-4 py-2.5 rounded-xl text-xs font-bold outline-none"></select>
+              <select id="fHankae" class="premium-input bg-slate-50 border border-slate-100 px-4 py-2.5 rounded-xl text-xs font-bold outline-none"></select>
+            </div>
+
+            <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+              <div class="flex items-center gap-4">
+                <div class="text-xs font-black text-slate-400 uppercase tracking-widest px-3 py-1 bg-slate-100 rounded-lg">Total <span id="cnt" class="text-indigo-600 ml-1">0</span></div>
+                <div id="activeFilterBadge" class="text-[11px] font-black text-indigo-500 bg-indigo-50 px-3 py-1 rounded-lg"></div>
+              </div>
+              
+              <div class="flex items-center gap-6">
+                <div class="flex items-center gap-3">
+                  <label class="text-[10px] uppercase font-black text-slate-400 tracking-widest">Sort By</label>
+                  <select id="listGroupBy" class="text-xs font-black text-slate-700 outline-none cursor-pointer bg-transparent border-b-2 border-slate-200 pb-1 focus:border-indigo-600 transition-all">
+                    <option value="none">등록일 (최신순)</option>
+                    <option value="branch">지점</option>
+                    <option value="inflow">유입채널</option>
+                    <option value="pay">결제방법</option>
+                    <option value="constructConfirm">시공확정여부</option>
+                    <option value="plus">PLUS 가전</option>
+                    <option value="esign">전자서명</option>
+                    <option value="order">발주</option>
+                    <option value="deposit">입금</option>
+                    <option value="subApprove">구독승인</option>
+                    <option value="installment">할부계약</option>
+                    <option value="construction">공사여부</option>
+                  </select>
+                </div>
+                
+                <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-xl">
+                  <button type="button" data-val="auto" class="cardColsBtn p-2 rounded-lg text-slate-400 hover:text-slate-600 transition-all" title="Auto"><i class="fas fa-table-cells"></i></button>
+                  <button type="button" data-val="1" class="cardColsBtn p-2 rounded-lg text-slate-400 hover:text-slate-600 transition-all" title="1 Column"><i class="fas fa-list"></i></button>
+                  <button type="button" data-val="2" class="cardColsBtn p-2 rounded-lg text-slate-400 hover:text-slate-600 transition-all" title="2 Columns"><i class="fas fa-table-cells-large"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="cards" class="grid gap-6"></div>
+        </div>
+
+        <!-- CALENDAR CONTAINER -->
+        <div id="page-calendar" class="hidden space-y-6 animate-fade-in">
+          <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <button id="calPrev" class="w-12 h-12 rounded-2xl bg-slate-50 hover:bg-slate-100 flex items-center justify-center transition-all"><i class="fas fa-chevron-left"></i></button>
+              <div class="text-2xl font-black text-slate-900 min-w-[140px] text-center" id="calTitle"></div>
+              <button id="calNext" class="w-12 h-12 rounded-2xl bg-slate-50 hover:bg-slate-100 flex items-center justify-center transition-all"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="flex items-center gap-2 text-xs font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-4 py-2 rounded-xl">
+              <i class="fas fa-circle-info text-indigo-400"></i>
+              확정시공일 기준 일정
+            </div>
+          </div>
+          
+          <div class="bg-white border border-slate-200 rounded-[32px] overflow-hidden shadow-sm">
+            <div class="grid grid-cols-7 bg-slate-50/50 border-b border-slate-100">
+              <div class="p-4 text-center text-[10px] font-black text-rose-500 uppercase tracking-widest">SUN</div>
+              <div class="p-4 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">MON</div>
+              <div class="p-4 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">TUE</div>
+              <div class="p-4 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">WED</div>
+              <div class="p-4 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">THU</div>
+              <div class="p-4 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">FRI</div>
+              <div class="p-4 text-center text-[10px] font-black text-sky-500 uppercase tracking-widest">SAT</div>
+            </div>
+            <div id="calGrid" class="grid grid-cols-7 bg-slate-100 gap-px"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div id="modal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-[700] p-4 lg:p-8 backdrop-blur-sm">
+    <div id="modalPanel" class="bg-white w-full max-w-6xl rounded-[40px] shadow-2xl overflow-hidden animate-fade-in flex flex-col h-full relative border border-white/20">
+      <!-- MODAL LOADING -->
+      <div id="modalLoading" class="absolute inset-0 bg-white/80 backdrop-blur-sm hidden items-center justify-center z-[800]">
+        <div class="flex flex-col items-center gap-4">
+          <div class="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+          <span class="text-sm font-black text-slate-600 uppercase tracking-widest">Loading Records...</span>
+        </div>
+      </div>
+
+      <!-- MODAL HEADER -->
+      <div class="bg-slate-900 p-8 lg:p-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative overflow-hidden">
+        <div class="absolute -right-20 -top-20 w-64 h-64 bg-indigo-600/20 rounded-full blur-3xl"></div>
+        <div class="relative z-10 flex-1 min-w-0">
+          <div class="flex items-center gap-3 flex-wrap">
+            <h3 class="text-2xl lg:text-3xl font-black text-white tracking-tight truncate" id="mTitle">고객 상세 정보</h3>
+            <span class="px-3 py-1 bg-white/10 rounded-lg text-[11px] font-black text-indigo-400 border border-white/5 uppercase tracking-widest" id="mCustomerNo"></span>
+          </div>
+          <div class="mt-3 flex items-center gap-4 text-slate-400">
+            <div class="flex items-center gap-2">
+              <i class="fas fa-phone-alt text-xs opacity-50"></i>
+              <span class="text-xs font-bold" id="mHeaderPhone"></span>
+            </div>
+            <div class="w-1 h-1 bg-white/20 rounded-full"></div>
+            <div class="flex items-center gap-2">
+              <i class="fas fa-location-dot text-xs opacity-50"></i>
+              <span class="text-xs font-bold truncate" id="mHeaderAddress"></span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="relative z-10 flex items-center gap-3">
+          <button id="btnDelete" class="px-6 py-3 rounded-2xl bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-500 text-xs font-black transition-all border border-rose-500/20 uppercase tracking-widest">
+            <i class="fas fa-trash-can mr-2"></i> Delete
+          </button>
+          <button id="btnClose" class="w-12 h-12 rounded-2xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all border border-white/10">
+            <i class="fas fa-xmark text-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- MODAL TABS -->
+      <div class="bg-white px-8 border-b border-slate-100">
+        <div class="flex overflow-x-auto custom-scrollbar no-scrollbar py-2 -mb-px">
+          <button class="mtab whitespace-nowrap px-6 py-4 text-xs font-black uppercase tracking-widest transition-all" data-tab="basic">기본정보</button>
+          <button class="mtab whitespace-nowrap px-6 py-4 text-xs font-black uppercase tracking-widest transition-all" data-tab="contract">시공/계약</button>
+          <button class="mtab whitespace-nowrap px-6 py-4 text-xs font-black uppercase tracking-widest transition-all" data-tab="cash">일시불 결제</button>
+          <button class="mtab whitespace-nowrap px-6 py-4 text-xs font-black uppercase tracking-widest transition-all" data-tab="sub">구독 계약</button>
+          <button class="mtab whitespace-nowrap px-6 py-4 text-xs font-black uppercase tracking-widest transition-all" data-tab="hankae">한캐 회신</button>
+          <button class="mtab whitespace-nowrap px-6 py-4 text-xs font-black uppercase tracking-widest transition-all" data-tab="plus">PLUS 가전</button>
+          <button class="mtab whitespace-nowrap px-6 py-4 text-xs font-black uppercase tracking-widest transition-all" data-tab="memo">데이터 비고</button>
+        </div>
+      </div>
+
+      <!-- MODAL CONTENT -->
+      <div class="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/50 p-8">
+        <!-- SECTIONS (Basic, Contract, etc.) -->
+        <!-- Logic remains similar to original but with premium UI styling -->
+        <div id="modalSections" class="max-w-4xl mx-auto space-y-8 animate-fade-in">
+          <!-- Dynamic Sections will be injected/shown here -->
+          <div class="msec grid grid-cols-1 md:grid-cols-2 gap-6" data-tab="basic">
+            <div class="card p-6 bg-white rounded-3xl border border-slate-200 shadow-sm space-y-6">
+              <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                <i class="fas fa-id-card text-indigo-500"></i> Identity Info
+              </h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-1">
+                  <label class="text-[10px] font-black text-slate-400 uppercase ml-1">고객번호</label>
+                  <input id="f-customerNo" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
+                </div>
+                <div class="space-y-1">
+                  <label class="text-[10px] font-black text-slate-400 uppercase ml-1">지점</label>
+                  <select id="f-branch" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold outline-none"></select>
+                </div>
+                <div class="space-y-1">
+                  <label class="text-[10px] font-black text-slate-400 uppercase ml-1">등록일</label>
+                  <input id="f-regDate" type="date" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold outline-none" />
+                </div>
+                <div class="space-y-1">
+                  <label class="text-[10px] font-black text-slate-400 uppercase ml-1">유입채널</label>
+                  <select id="f-inflowChannel" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold outline-none"></select>
+                </div>
+                <div class="space-y-1">
+                  <label class="text-[10px] font-black text-slate-400 uppercase ml-1">고객명</label>
+                  <input id="f-name" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold outline-none" />
+                </div>
+                <div class="space-y-1">
+                  <label class="text-[10px] font-black text-slate-400 uppercase ml-1">연락처</label>
+                  <input id="f-phone" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold outline-none" placeholder="숫자만 입력" />
+                </div>
+                <div class="md:col-span-2 space-y-1">
+                  <label class="text-[10px] font-black text-slate-400 uppercase ml-1">주소</label>
+                  <div class="flex gap-2">
+                    <input id="f-address" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold outline-none" />
+                    <button id="btnAddr" class="px-4 bg-slate-900 text-white rounded-xl hover:bg-slate-700 transition-all shadow-sm">
+                      <i class="fas fa-search text-xs"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card p-6 bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col space-y-4">
+              <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                <i class="fas fa-sticky-note text-indigo-500"></i> Quick Memo
+              </h4>
+              <textarea id="f-memoQuick" class="flex-1 w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none transition-all resize-none" placeholder="중요 요약 사항..."></textarea>
+            </div>
+          </div>
+          
+          <!-- OTHER SECTIONS (Contract, Cash, etc.) follow similar pattern -->
+          <div class="msec hidden card p-8 bg-white rounded-3xl border border-slate-200 shadow-sm space-y-8" data-tab="contract">
+            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+              <i class="fas fa-file-contract text-indigo-500"></i> Construction & Contract
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">시공확정여부</label>
+                <select id="f-constructConfirm" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none"></select>
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">확정시공일</label>
+                <input id="f-constructDateFix" type="date" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none" />
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">시공계약서(전자서명)</label>
+                <select id="f-esignStatus" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none"></select>
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">결제방법</label>
+                <select id="f-payMethod" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none"></select>
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">최종견적가</label>
+                <input id="f-finalQuote" inputmode="numeric" class="money-input w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-black text-indigo-600 outline-none" />
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">PLUS 가전 여부</label>
+                <select id="f-plusYn" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none">
+                  <option value="">(미선택)</option>
+                  <option value="Y">PLUS가전</option>
+                  <option value="N">해당없음</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div class="msec hidden card p-8 bg-white rounded-3xl border border-slate-200 shadow-sm space-y-8" data-tab="cash">
+            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+              <i class="fas fa-money-bill-transfer text-indigo-500"></i> Cash Payment Details
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">입금/결제금액</label>
+                <input id="f-paidAmount" inputmode="numeric" class="money-input w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none" />
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">입금/결제일</label>
+                <input id="f-paidDate" type="date" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none" />
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">잔금</label>
+                <input id="f-balanceAmount" inputmode="numeric" class="money-input w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none" />
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">잔금 결제일</label>
+                <input id="f-balancePaidDate" type="date" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none" />
+              </div>
+            </div>
+          </div>
+
+          <div class="msec hidden card p-8 bg-white rounded-3xl border border-slate-200 shadow-sm space-y-8" data-tab="sub">
+            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+              <i class="fas fa-arrows-rotate text-indigo-500"></i> Subscription Contract
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">이자유무</label>
+                <select id="f-interestYn" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none">
+                  <option value="">(미선택)</option>
+                  <option value="Y">유</option>
+                  <option value="N">무</option>
+                </select>
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">총구독료</label>
+                <input id="f-subTotalFee" inputmode="numeric" class="money-input w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none" />
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">구독개월</label>
+                <input id="f-subMonths" type="number" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none" />
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">월구독료</label>
+                <input id="f-subMonthlyFee" inputmode="numeric" class="money-input w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none" />
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">승인여부</label>
+                <select id="f-subApprove" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none"></select>
+              </div>
+            </div>
+          </div>
+
+          <div class="msec hidden card p-8 bg-white rounded-3xl border border-slate-200 shadow-sm space-y-8" data-tab="hankae">
+            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+              <i class="fas fa-reply-all text-indigo-500"></i> Hankae Feedback
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">한캐피드백</label>
+                <select id="f-hankaeFeedback" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none"></select>
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">할부계약일</label>
+                <input id="f-installmentContractDate" type="date" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none" />
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">녹취요청</label>
+                <input id="f-recordingRequestDate" type="date" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none" />
+              </div>
+            </div>
+          </div>
+
+          <div class="msec hidden card p-8 bg-white rounded-3xl border border-slate-200 shadow-sm space-y-8" data-tab="plus">
+            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+              <i class="fas fa-plus-circle text-indigo-500"></i> PLUS Home Appliances
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">제품명</label>
+                <select id="f-plusProduct" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none"></select>
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">모델명</label>
+                <input id="f-plusModel" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none" />
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">배송일</label>
+                <input id="f-deliveryDate" type="date" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none" />
+              </div>
+            </div>
+          </div>
+
+          <div class="msec hidden flex flex-col h-full space-y-4" data-tab="memo">
+            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+              <i class="fas fa-comment-dots text-indigo-500"></i> Complete Remarks
+            </h4>
+            <textarea id="f-memo" class="flex-1 min-h-[400px] w-full bg-white border border-slate-200 rounded-[32px] p-8 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none transition-all resize-none shadow-sm" placeholder="상세 비고 내용을 입력하세요..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL FOOTER -->
+      <div class="bg-white p-8 border-t border-slate-100 flex items-center justify-between">
+        <div class="text-[10px] font-black text-slate-400 flex items-center gap-2 uppercase tracking-widest">
+          <i class="fas fa-info-circle text-indigo-400"></i> 모든 변경 사항은 구글 시트에 즉시 반영됩니다
+        </div>
+        <button id="btnSave" class="px-12 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl shadow-xl shadow-indigo-100 transition-all flex items-center gap-3 active:scale-[0.98]">
+          <i class="fas fa-cloud-arrow-up"></i> 마스터 데이터 저장하기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
