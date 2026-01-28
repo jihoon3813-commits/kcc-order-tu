@@ -1043,7 +1043,26 @@ function onDashTaskClick(key) {
     renderList();
 }
 
-function renderBanners() { /* Banner implementation can be added if needed */ }
+function renderBanners() {
+    const wrap = $('banners');
+    if (!wrap) return;
+    const items = state.config.banners || [];
+    if (!items.length) {
+        wrap.innerHTML = '<div class="text-[10px] text-slate-600 italic py-2">등록된 배너가 없습니다.</div>';
+        return;
+    }
+
+    wrap.innerHTML = items.slice(0, 3).map(b => `
+        <a href="${b.link || '#'}" target="_blank" class="block group relative overflow-hidden rounded-xl bg-slate-800 border border-white/5 transition-all hover:border-indigo-500/50">
+            <div class="aspect-[16/9] w-full bg-slate-700 overflow-hidden">
+                <img src="${b.img}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" alt="${esc(b.title)}">
+            </div>
+            <div class="p-2.5 bg-black/20 backdrop-blur-sm border-t border-white/5">
+                <div class="text-[10px] font-bold text-slate-400 group-hover:text-white transition-all truncate">${esc(b.title)}</div>
+            </div>
+        </a>
+    `).join('');
+}
 
 function renderCalendar() {
     const d = state.calDate;
