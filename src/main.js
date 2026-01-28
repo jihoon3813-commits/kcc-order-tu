@@ -235,10 +235,15 @@ async function reloadAll(initial) {
         state.customers = (res.data && res.data.customers) ? res.data.customers.map(c => ({
             ...c,
             regDate: formatDate(c.regDate),
-            applyDate: formatDate(c.applyDate), // NEW
-            birth: formatDate(c.birth),         // NEW
-            esignDate: formatDate(c.esignDate), // NEW
-            constructDateFix: formatDate(c.constructDateFix)
+            applyDate: formatDate(c.applyDate),
+            birth: formatDate(c.birth),
+            esignDate: formatDate(c.esignDate),
+            constructDateFix: formatDate(c.constructDateFix),
+            paidDate: formatDate(c.paidDate),
+            balancePaidDate: formatDate(c.balancePaidDate),
+            installmentContractDate: formatDate(c.installmentContractDate),
+            recordingRequestDate: formatDate(c.recordingRequestDate),
+            deliveryDate: formatDate(c.deliveryDate)
         })) : [];
         renderBanners();
         initSelectors();
